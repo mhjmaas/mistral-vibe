@@ -124,8 +124,10 @@ class OpenAIAdapter(APIAdapter):
 
         if enable_streaming:
             payload["stream"] = True
+            stream_options: dict[str, Any] = {"include_usage": True}
             if provider.name == "mistral":
-                payload["stream_options"] = {"stream_tool_calls": True}
+                stream_options["stream_tool_calls"] = True
+            payload["stream_options"] = stream_options
 
         headers = self.build_headers(api_key)
 
