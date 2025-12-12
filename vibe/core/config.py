@@ -53,6 +53,7 @@ CONFIG_FILE = resolve_config_file()
 CONFIG_DIR = CONFIG_FILE.parent
 AGENT_DIR = CONFIG_DIR / "agents"
 PROMPT_DIR = CONFIG_DIR / "prompts"
+COMMAND_DIR = CONFIG_DIR / "commands"
 INSTRUCTIONS_FILE = CONFIG_DIR / "instructions.md"
 HISTORY_FILE = CONFIG_DIR / "vibehistory"
 PROJECT_DOC_FILENAMES = ["AGENTS.md", "VIBE.md", ".vibe.md"]
@@ -299,7 +300,7 @@ class VibeConfig(BaseSettings):
     vim_keybindings: bool = False
     disable_welcome_banner_animation: bool = False
     displayed_workdir: str = ""
-    auto_compact_threshold: int = 175_000
+    auto_compact_threshold: int = 100_000
     context_warnings: bool = False
     textual_theme: str = "textual-dark"
     instructions: str = ""
@@ -553,10 +554,10 @@ class VibeConfig(BaseSettings):
 
         if (
             "auto_compact_threshold" not in config
-            or config["auto_compact_threshold"] == 100_000  # noqa: PLR2004
             or config["auto_compact_threshold"] == 200_000  # noqa: PLR2004
+            or config["auto_compact_threshold"] == 175_000  # noqa: PLR2004
         ):
-            config["auto_compact_threshold"] = 175_000
+            config["auto_compact_threshold"] = 100_000
             needs_save = True
 
         if needs_save:
