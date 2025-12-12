@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
-from vibe.core.config import COMMAND_DIR
+from vibe.core.config import GLOBAL_CONFIG_DIR
 
 
 @dataclass
@@ -15,7 +16,12 @@ class Command:
 
 @dataclass
 class CustomCommand:
-    """A custom command loaded from ~/.vibe/commands/*.md"""
+    """A custom command loaded from commands/*.md.
+
+    Commands are loaded from both global (~/.vibe/commands/) and
+    project (.vibe/commands/) directories, with project commands
+    taking precedence.
+    """
 
     name: str
     template: str
@@ -93,9 +99,30 @@ class CommandRegistry:
         self._load_custom_commands()
 
     def _load_custom_commands(self) -> None:
-        if not COMMAND_DIR.is_dir():
+        """Load custom commands from both global and project directories.
+
+        Commands are loaded from:
+        1. Global commands directory (~/.vibe/commands/)
+        2. Project commands directory (.vibe/commands/ in current working directory)
+
+        Project commands take precedence if they have the same name.
+        """
+        # Load global commands first
+        global_command_dir = GLOBAL_CONFIG_DIR / "commands"
+        self._load_commands_from_directory(global_command_dir)
+
+        # Load project commands (these override global commands with same name)
+        # Check for .vibe/commands/ in current working directory, regardless of
+        # whether there's a config file
+        project_command_dir = Path.cwd() / ".vibe" / "commands"
+        if project_command_dir != global_command_dir and project_command_dir.is_dir():
+            self._load_commands_from_directory(project_command_dir)
+
+    def _load_commands_from_directory(self, directory: Path) -> None:
+        """Load custom commands from a specific directory."""
+        if not directory.is_dir():
             return
-        for cmd_file in COMMAND_DIR.glob("*.md"):
+        for cmd_file in directory.glob("*.md"):
             name = cmd_file.stem
             if name.startswith("_"):
                 continue
