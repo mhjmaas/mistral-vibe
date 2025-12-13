@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from vibe.core.config import GLOBAL_CONFIG_DIR
+from vibe.core.config_path import VIBE_HOME
 
 
 @dataclass
@@ -108,7 +108,7 @@ class CommandRegistry:
         Project commands take precedence if they have the same name.
         """
         # Load global commands first
-        global_command_dir = GLOBAL_CONFIG_DIR / "commands"
+        global_command_dir = VIBE_HOME.path / "commands"
         self._load_commands_from_directory(global_command_dir)
 
         # Load project commands (these override global commands with same name)
