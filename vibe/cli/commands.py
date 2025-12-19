@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from vibe.core.config_path import VIBE_HOME
+from vibe.core.paths.global_paths import VIBE_HOME
 
 
 @dataclass
@@ -45,45 +45,50 @@ class CommandRegistry:
             excluded_commands = []
         self.commands = {
             "help": Command(
-                aliases=frozenset(["/help", "/h"]),
+                aliases=frozenset(["/help"]),
                 description="Show help message",
                 handler="_show_help",
             ),
-            "status": Command(
-                aliases=frozenset(["/status", "/stats"]),
-                description="Display agent statistics",
-                handler="_show_status",
-            ),
             "config": Command(
-                aliases=frozenset(["/config", "/cfg", "/theme", "/model"]),
+                aliases=frozenset(["/config", "/theme", "/model"]),
                 description="Edit config settings",
                 handler="_show_config",
             ),
             "reload": Command(
-                aliases=frozenset(["/reload", "/r"]),
+                aliases=frozenset(["/reload"]),
                 description="Reload configuration from disk",
                 handler="_reload_config",
             ),
             "clear": Command(
-                aliases=frozenset(["/clear", "/reset"]),
+                aliases=frozenset(["/clear"]),
                 description="Clear conversation history",
                 handler="_clear_history",
             ),
             "log": Command(
-                aliases=frozenset(["/log", "/logpath"]),
+                aliases=frozenset(["/log"]),
                 description="Show path to current interaction log file",
                 handler="_show_log_path",
             ),
             "compact": Command(
-                aliases=frozenset(["/compact", "/summarize"]),
+                aliases=frozenset(["/compact"]),
                 description="Compact conversation history by summarizing",
                 handler="_compact_history",
             ),
             "exit": Command(
-                aliases=frozenset(["/exit", "/quit", "/q"]),
+                aliases=frozenset(["/exit"]),
                 description="Exit the application",
                 handler="_exit_app",
                 exits=True,
+            ),
+            "terminal-setup": Command(
+                aliases=frozenset(["/terminal-setup"]),
+                description="Configure Shift+Enter for newlines",
+                handler="_setup_terminal",
+            ),
+            "status": Command(
+                aliases=frozenset(["/status"]),
+                description="Display agent statistics",
+                handler="_show_status",
             ),
         }
 
@@ -141,12 +146,12 @@ class CommandRegistry:
     ) -> tuple[Command | CustomCommand | None, str]:
         """Parse input and return (command, arguments) tuple."""
         parts = user_input.strip().split(maxsplit=1)
-        cmd_str = parts[0].lower() if parts else ""
+        cmd_str = parts[0] if parts else ""
         args = parts[1] if len(parts) > 1 else ""
 
         # Check built-in commands first
-        if cmd_name := self._alias_map.get(cmd_str):
-            return (self.commands[cmd_name], args)
+        if built_in_cmd := self.find_command(cmd_str):
+            return (built_in_cmd, args)
 
         # Check custom commands
         if cmd_str.startswith("/"):
