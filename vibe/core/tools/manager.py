@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 import importlib.util
 import inspect
 from logging import getLogger
@@ -39,22 +39,25 @@ class ToolManager:
     should have its own ToolManager instance.
     """
 
-    def __init__(self, config: VibeConfig) -> None:
-        self._config = config
+    def __init__(self, config_getter: Callable[[], VibeConfig]) -> None:
+        self._config_getter = config_getter
         self._instances: dict[str, BaseTool] = {}
-        self._search_paths: list[Path] = self._compute_search_paths(config)
+        self._search_paths: list[Path] = self._compute_search_paths(self._config)
 
         self._available: dict[str, type[BaseTool]] = {
             cls.get_name(): cls for cls in self._iter_tool_classes(self._search_paths)
         }
         self._integrate_mcp()
 
+    @property
+    def _config(self) -> VibeConfig:
+        return self._config_getter()
+
     @staticmethod
     def _compute_search_paths(config: VibeConfig) -> list[Path]:
         paths: list[Path] = [DEFAULT_TOOL_DIR.path]
 
-        for p in config.tool_paths:
-            path = Path(p).expanduser().resolve()
+        for path in config.tool_paths:
             if path.is_dir():
                 paths.append(path)
 
