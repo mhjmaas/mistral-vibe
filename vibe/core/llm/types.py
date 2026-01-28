@@ -35,6 +35,7 @@ class BackendLike(Protocol):
         max_tokens: int | None,
         tool_choice: StrToolChoice | AvailableTool | None,
         extra_headers: dict[str, str] | None,
+        previous_response_id: str | None = None,
     ) -> LLMChunk:
         """Complete a chat conversation using the specified model and provider.
 
@@ -46,9 +47,12 @@ class BackendLike(Protocol):
             max_tokens: Maximum tokens to generate
             tool_choice: How to choose tools (auto, none, or specific tool)
             extra_headers: Additional HTTP headers to include
+            previous_response_id: For responses API, the ID of the previous response
+                to chain conversations (stateful mode)
 
         Returns:
-            LLMChunk containing the response message and usage information
+            LLMChunk containing the response message, usage information, and
+            optionally a response_id for stateful conversations
 
         Raises:
             BackendError: If the API request fails
@@ -68,9 +72,10 @@ class BackendLike(Protocol):
         max_tokens: int | None,
         tool_choice: StrToolChoice | AvailableTool | None,
         extra_headers: dict[str, str] | None,
+        previous_response_id: str | None = None,
     ) -> AsyncGenerator[LLMChunk, None]:
-        """Equivalent of the complete method, but yields LLMEvent objects
-        instead of a single LLMEvent.
+        """Equivalent of the complete method, but yields LLMChunk objects
+        instead of a single LLMChunk.
 
         Args:
             model: Model configuration
@@ -80,9 +85,12 @@ class BackendLike(Protocol):
             max_tokens: Maximum tokens to generate
             tool_choice: How to choose tools (auto, none, or specific tool)
             extra_headers: Additional HTTP headers to include
+            previous_response_id: For responses API, the ID of the previous response
+                to chain conversations (stateful mode)
 
         Returns:
-            AsyncGenerator[LLMEvent, None] yielding LLMEvent objects
+            AsyncGenerator[LLMChunk, None] yielding LLMChunk objects, with the
+            final chunk containing the response_id for stateful conversations
 
         Raises:
             BackendError: If the API request fails

@@ -130,6 +130,12 @@ class ProviderConfig(BaseModel):
     api_style: str = "openai"
     backend: Backend = Backend.GENERIC
     reasoning_field_name: str = "reasoning_content"
+    use_responses_api: bool = (
+        False  # When True, use /responses endpoint instead of /chat/completions
+    )
+    responses_api_store: bool = (
+        True  # When using responses API, whether to store state server-side
+    )
 
 
 class _MCPBase(BaseModel):

@@ -283,13 +283,20 @@ class LLMChunk(BaseModel):
     model_config = ConfigDict(frozen=True)
     message: LLMMessage
     usage: LLMUsage | None = None
+    response_id: str | None = None  # For responses API stateful conversations
 
     def __add__(self, other: LLMChunk) -> LLMChunk:
         if self.usage is None and other.usage is None:
             new_usage = None
         else:
             new_usage = (self.usage or LLMUsage()) + (other.usage or LLMUsage())
-        return LLMChunk(message=self.message + other.message, usage=new_usage)
+        # Preserve response_id from either chunk (prefer non-None)
+        new_response_id = self.response_id or other.response_id
+        return LLMChunk(
+            message=self.message + other.message,
+            usage=new_usage,
+            response_id=new_response_id,
+        )
 
 
 class BaseEvent(BaseModel, ABC):
